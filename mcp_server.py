@@ -90,5 +90,3 @@ def delete_expenses_tool(
         expense_ids=expense_ids
     )
 
-app = mcp
-
