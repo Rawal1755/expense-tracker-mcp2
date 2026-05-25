@@ -15,6 +15,7 @@ ALLOWED_CATEGORIES = [
 
 
 def add_expense(
+    user_id: str,
     amount: float,
     category: str,
     description: str,
@@ -28,10 +29,11 @@ def add_expense(
     db = SessionLocal()
 
     new_expense = Expense(
-        amount=amount,
-        category=category,
-        description=description,
-        expense_date=expense_date
+    user_id=user_id,
+    amount=amount,
+    category=category,
+    description=description,
+    expense_date=expense_date
     )
 
     db.add(new_expense)
@@ -46,10 +48,17 @@ def add_expense(
 
 
 
-def get_expenses(categories=None):
+def get_expenses(
+    user_id,
+    categories=[]
+):
     db = SessionLocal()
 
     query = db.query(Expense)
+
+    query = query.filter(
+        Expense.user_id == user_id
+    )
 
     if categories:
         query = query.filter(
@@ -64,10 +73,12 @@ def get_expenses(categories=None):
 
 
 
-def get_expense_summary():
+def get_expense_summary(user_id):
     db = SessionLocal()
 
-    expenses = db.query(Expense).all()
+    expenses = db.query(Expense).filter(
+        Expense.user_id == user_id
+    ).all()
 
     total_spending = 0
 
@@ -86,7 +97,36 @@ def get_expense_summary():
     db.close()
 
     return {
+        "user_id": user_id,
         "total_spending": total_spending,
         "total_expenses": total_expenses,
         "category_breakdown": category_breakdown
+    }
+
+
+
+def delete_expenses(
+    user_id,
+    expense_ids
+):
+    db = SessionLocal()
+
+    expenses = db.query(Expense).filter(
+        Expense.user_id == user_id,
+        Expense.id.in_(expense_ids)
+    ).all()
+
+    deleted_count = len(expenses)
+
+    for expense in expenses:
+        db.delete(expense)
+
+    db.commit()
+
+    db.close()
+
+    return {
+        "user_id": user_id,
+        "deleted_expense_ids": expense_ids,
+        "deleted_count": deleted_count
     }

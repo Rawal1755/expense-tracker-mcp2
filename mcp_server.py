@@ -7,6 +7,7 @@ mcp = FastMCP("Expense Tracker")
 
 @mcp.tool()
 def add_expense_tool(
+    user_id: str,
     amount: float,
     category: str,
     description: str,
@@ -20,15 +21,19 @@ def add_expense_tool(
     """
 
     return record_expense(
-        amount=amount,
-        category=category,
-        description=description,
-        expense_date=expense_date
+    user_id=user_id,
+    amount=amount,
+    category=category,
+    description=description,
+    expense_date=expense_date
     )
 
 
 @mcp.tool()
-def get_expenses_tool(categories: list[str] = None):
+def get_expenses_tool(
+    user_id: str,
+    categories: list[str] = []
+):
     """
     Fetch expenses from the database.
 
@@ -38,21 +43,49 @@ def get_expenses_tool(categories: list[str] = None):
 
     from expense_mcp.tools.expense_tools import fetch_expenses
 
-    return fetch_expenses(categories=categories)
+    return fetch_expenses(
+    user_id=user_id,
+    categories=categories
+    )
 
 
 
 @mcp.tool()
-def expense_summary_tool():
+def expense_summary_tool(user_id: str):
     """
-    Get overall expense analytics summary.
+    Get overall expense analytics summary
+    for a specific user.
     """
 
     from expense_mcp.tools.expense_tools import (
         fetch_expense_summary
     )
 
-    return fetch_expense_summary()
+    return fetch_expense_summary(
+        user_id=user_id
+    )
+
+
+
+
+@mcp.tool()
+def delete_expenses_tool(
+    user_id: str,
+    expense_ids: list[int]
+):
+    """
+    Delete one or multiple expenses
+    belonging to a specific user.
+    """
+
+    from expense_mcp.tools.expense_tools import (
+        remove_expenses
+    )
+
+    return remove_expenses(
+        user_id=user_id,
+        expense_ids=expense_ids
+    )
 
 
 if __name__ == "__main__":
